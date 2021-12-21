@@ -1,5 +1,8 @@
 sudo: true
-os: linux
+os: 
+  - linux
+  - osx
+
 dist: bionic
 language: c
 services: docker
