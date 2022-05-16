@@ -15,6 +15,7 @@ from mariadb.constants import *
 from test.base_test import create_connection, is_maxscale, is_mysql
 
 server_indicator_version = 100206
+server_returning_version = 100500
 
 
 class foo(int):
@@ -1191,6 +1192,8 @@ class TestCursor(unittest.TestCase):
     def test_conpy194(self):
         if is_mysql():
             self.skipTest("Skip (MySQL)")
+        if self.connection.server_version < server_returning_version:
+            self.skipTest("Requires server version >= %s" % server_returning_version)
         conn= create_connection()
         cursor= conn.cursor()
 
