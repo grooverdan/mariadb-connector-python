@@ -18,13 +18,14 @@ install:
   - eval "$(pyenv init -)"
   - export PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
   # install c dependency
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
-    brew install openssl@1.1;
-  - else
-    sudo apt-get install software-properties-common;
-    sudo apt-get install -f libssl-dev libssl1.1;
-    sudo apt-get install -f;
-  - fi
+  - |-
+    if [ "$TRAVIS_OS_NAME" = "osx" ] ; then
+      brew install openssl@1.1;
+    else
+      sudo apt-get install software-properties-common
+      sudo apt-get install -f libssl-dev libssl1.1
+      sudo apt-get install -f
+    fi
   - git clone https://github.com/mariadb-corporation/mariadb-connector-c.git ~/.cc_3
   - cd ~/.cc_3
   - mkdir bld
