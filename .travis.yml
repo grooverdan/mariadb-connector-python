@@ -30,7 +30,12 @@ install:
   - cd ~/.cc_3
   - mkdir bld
   - cd bld
-  - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+  - |-
+    if [ "$TRAVIS_OS_NAME" = "osx" ] ; then
+      cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DWITH_OPENSSL_ROOTDIR=/usr/local/opt/openssl@1.1
+    else
+      cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+    fi
   - make -j4
   - sudo make install
   - export MARIADB_PLUGIN_DIR==`mariadb_config --plugindir`
