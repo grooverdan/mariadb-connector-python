@@ -29,7 +29,7 @@ class CursorMariaDBTest(unittest.TestCase):
             self.connection.commit()
             cursor.execute("SELECT * FROM test_insert_parameter order by a")
             list_out = cursor.fetchall()
-            self.assertEqual(len(list_in), cursor.rowcount);
+            self.assertEqual(len(list_in), cursor.rowcount)
             self.assertEqual(list_in, list_out)
             cursor.close()
 
@@ -38,7 +38,7 @@ class CursorMariaDBTest(unittest.TestCase):
             cursor.execute(
                 "CREATE TEMPORARY TABLE test_update_parameter(a int not null auto_increment "
                 "primary key, b int, c int, d varchar(20),e date)")
-            cursor.execute("set @@autocommit=0");
+            cursor.execute("set @@autocommit=0")
             list_in = []
             for i in range(1, 300001):
                 row = (i, i, i, "bar", datetime.date(2019, 1, 1))
@@ -47,17 +47,17 @@ class CursorMariaDBTest(unittest.TestCase):
             self.assertEqual(len(list_in), cursor.rowcount)
             self.connection.commit()
             cursor.close()
-            list_update = [];
+            list_update = []
 
             cursor = self.connection.cursor()
-            cursor.execute("set @@autocommit=0");
+            cursor.execute("set @@autocommit=0")
             for i in range(1, 300001):
-                row = (i + 1, i);
-                list_update.append(row);
+                row = (i + 1, i)
+                list_update.append(row)
 
-            cursor.executemany("UPDATE test_update_parameter SET b=? WHERE a=?", list_update);
+            cursor.executemany("UPDATE test_update_parameter SET b=? WHERE a=?", list_update)
             self.assertEqual(cursor.rowcount, 300000)
-            self.connection.commit();
+            self.connection.commit()
             cursor.close()
 
         def test_delete_parameter(self):
@@ -65,7 +65,7 @@ class CursorMariaDBTest(unittest.TestCase):
             cursor.execute(
                 "CREATE TEMPORARY TABLE test_delete_parameter(a int not null auto_increment "
                 "primary key, b int, c int, d varchar(20),e date)")
-            cursor.execute("set @@autocommit=0");
+            cursor.execute("set @@autocommit=0")
             list_in = []
             for i in range(1, 300001):
                 row = (i, i, i, "bar", datetime.date(2019, 1, 1))
@@ -74,16 +74,16 @@ class CursorMariaDBTest(unittest.TestCase):
             self.assertEqual(len(list_in), cursor.rowcount)
             self.connection.commit()
             cursor.close()
-            list_delete = [];
+            list_delete = []
 
             cursor = self.connection.cursor()
-            cursor.execute("set @@autocommit=0");
+            cursor.execute("set @@autocommit=0")
             for i in range(1, 300001):
-                list_delete.append((i,));
+                list_delete.append((i,))
 
-            cursor.executemany("DELETE FROM test_delete_parameter WHERE a=?", list_delete);
+            cursor.executemany("DELETE FROM test_delete_parameter WHERE a=?", list_delete)
             self.assertEqual(cursor.rowcount, 300000)
-            self.connection.commit();
+            self.connection.commit()
             cursor.close()
 
 

@@ -13,7 +13,7 @@ from decimal import Decimal
 import mariadb
 from mariadb.constants import *
 
-from test.base_test import create_connection, is_maxscale, is_mysql
+from test.base_test import create_connection, is_maxscale, is_mysql, is_skysql, is_xpand
 
 server_indicator_version = 100206
 
@@ -1165,15 +1165,15 @@ class TestCursor(unittest.TestCase):
         connection.close()
 
     def test_conpy193(self):
-        connection= create_connection()
-        cursor= connection.cursor()
+        connection = create_connection()
+        cursor = connection.cursor()
         cursor.execute("create temporary table t1 (a int, b int, c int)")
-        data= [(None,1,1),(2,None,2),(3,3,None)]
+        data = [(None, 1, 1), (2, None, 2), (3, 3, None)]
 
         cursor.executemany("INSERT INTO t1 VALUES (?,?,?)", data);
 
         cursor.execute("SELECT a,b,c FROM t1")
-        result= cursor.fetchall()
+        result = cursor.fetchall()
         self.assertEqual(data, result)
         del cursor
         connection.close()
@@ -1181,65 +1181,66 @@ class TestCursor(unittest.TestCase):
     def test_conpy194(self):
         if is_mysql():
             self.skipTest("Skip (MySQL)")
-        conn= create_connection()
-        cursor= conn.cursor()
+        if self.connection.server_version < 100500:
+            self.skipTest("INSERT ... RETURNING not supported")
+        conn = create_connection()
+        cursor = conn.cursor()
 
         cursor.execute("create temporary table t1 (a int not null auto_increment primary key, b varchar(10))")
 
-        data= [(1,),(2,),(3,)]
+        data = [(1,), (2,), (3,)]
 
         cursor.executemany("insert into t1 values (?, 'foo') returning a", data)
-        rows= cursor.fetchall()
+        rows = cursor.fetchall()
         self.assertEqual(rows, data)
 
         cursor.executemany("delete from t1 where a=? returning a", data)
-        rows= cursor.fetchall()
+        rows = cursor.fetchall()
         self.assertEqual(rows, data)
 
         cursor.execute("select a from t1")
-        rows= cursor.fetchall()
+        rows = cursor.fetchall()
         self.assertEqual(rows, [])
 
-        data= [(1,"foo"),(2,"bar"),(3,"hello")]
+        data = [(1, "foo"), (2, "bar"), (3, "hello")]
         cursor.executemany("insert into t1 values (?,?) returning a,b", data)
-        rows= cursor.fetchall()
+        rows = cursor.fetchall()
         self.assertEqual(rows, data)
 
         cursor.executemany("replace into t1 values (?,?) returning a,b", [(1, "xyz")])
-        rows= cursor.fetchall()
-        self.assertEqual(rows, [(1,"xyz")])
+        rows = cursor.fetchall()
+        self.assertEqual(rows, [(1, "xyz")])
 
         del cursor, conn
 
     def test_conpy196(self):
-        if is_maxscale():
+        if is_skysql() or is_maxscale() or is_xpand():
             self.skipTest("skip test (possible timeout)")
-        last= 0
-        for i in range(1,100000):
-            conn= create_connection()
-            cursor= conn.cursor()
+        last = 0
+        for i in range(1, 100000):
+            conn = create_connection()
+            cursor = conn.cursor()
             cursor.close()
             conn.close()
             usage = resource.getrusage(resource.RUSAGE_SELF)
-            new= usage[2]
+            new = usage[2]
             if (last > 0):
                 self.assertEqual(new, last)
-            last= new
+            last = new
 
     def test_conpy178(self):
-        conn= create_connection()
-        cursor= conn.cursor()
+        conn = create_connection()
+        cursor = conn.cursor()
         cursor.execute("DROP PROCEDURE IF EXISTS p2")
-        cursor.execute("CREATE PROCEDURE p2(IN s1 VARCHAR(20), IN s2 VARCHAR(20), OUT o1 VARCHAR(40) )\nBEGIN\nSET o1:=CAST(CONCAT(s1,s2) AS char CHARACTER SET utf8mb4);\nEND")
+        cursor.execute(
+            "CREATE PROCEDURE p2(IN s1 VARCHAR(20), IN s2 VARCHAR(20), OUT o1 VARCHAR(40) )\nBEGIN\nSET o1:=CAST(CONCAT(s1,s2) AS char CHARACTER SET utf8mb4);\nEND")
 
-        for i in range (0,500):
+        for i in range(0, 500):
             cursor.callproc("p2", ("foo", "bar", 1))
-            row= cursor.fetchone()
+            row = cursor.fetchone()
             self.assertEqual(row[0], "foobar")
 
         conn.close()
-
-
 
     def test_conpy91(self):
         with create_connection() as connection:

@@ -24,9 +24,10 @@ class TestConnection(unittest.TestCase):
             self.skipTest("unix_socket not supported on Windows")
         default_conf = conf()
         try:
-           conn= mariadb.connect(user=default_conf["user"], unix_socket="/does_not_exist/x.sock", port=default_conf["port"], host=default_conf["host"])
+            conn = mariadb.connect(user=default_conf["user"], unix_socket="/does_not_exist/x.sock",
+                                   port=default_conf["port"], host=default_conf["host"])
         except (mariadb.OperationalError,):
-           pass
+            pass
 
     def test_connection_default_file(self):
         if os.path.exists("client.cnf"):
@@ -56,9 +57,9 @@ class TestConnection(unittest.TestCase):
         self.assertEqual(conn.autocommit, True)
 
     def test_local_infile(self):
-        default_conf= conf()
+        default_conf = conf()
         new_conn = mariadb.connect(**default_conf, local_infile=False)
-        cursor=new_conn.cursor()
+        cursor = new_conn.cursor()
         cursor.execute("CREATE TEMPORARY TABLE t1 (a int)")
         try:
             cursor.execute("LOAD DATA LOCAL INFILE 'x.x' INTO TABLE t1")
@@ -68,22 +69,23 @@ class TestConnection(unittest.TestCase):
         del new_conn
 
     def test_init_command(self):
-        default_conf= conf()
+        default_conf = conf()
         new_conn = mariadb.connect(**default_conf, init_command="SET @a:=1")
-#, port=default_conf["port"], host=default_conf["host"], password=default_conf["password"])
-        cursor=new_conn.cursor()
+        # , port=default_conf["port"], host=default_conf["host"], password=default_conf["password"])
+        cursor = new_conn.cursor()
         cursor.execute("SELECT @a")
-        row=cursor.fetchone()
+        row = cursor.fetchone()
         self.assertEqual(row[0], 1)
         del cursor
         del new_conn
 
     def test_compress(self):
-        default_conf= conf()
+        default_conf = conf()
         new_conn = mariadb.connect(**default_conf, compress=True)
-        cursor=new_conn.cursor()
+        cursor = new_conn.cursor()
         cursor.execute("SHOW SESSION STATUS LIKE 'compression'")
-        row=cursor.fetchone()
+        row = cursor.fetchone()
+        print(row[1])
         if is_maxscale():
             self.assertEqual(row[1], "OFF")
         else:
@@ -139,10 +141,11 @@ class TestConnection(unittest.TestCase):
         curs = conn.cursor(buffered=True)
 
         if self.connection.server_name == "localhost":
-          curs.execute("select * from information_schema.plugins where plugin_name='unix_socket' and plugin_status='ACTIVE'")
-          if curs.rowcount > 0:
-              del curs
-              self.skipTest("unix_socket is active")
+            curs.execute(
+                "select * from information_schema.plugins where plugin_name='unix_socket' and plugin_status='ACTIVE'")
+            if curs.rowcount > 0:
+                del curs
+                self.skipTest("unix_socket is active")
 
         cursor = conn.cursor()
         try:
@@ -172,14 +175,14 @@ class TestConnection(unittest.TestCase):
         with create_connection() as con:
             with con.cursor() as cursor:
                 cursor.execute("SELECT 'foo'")
-                row= cursor.fetchone()
+                row = cursor.fetchone()
                 self.assertEqual(row[0], "foo")
             try:
                 cursor.execute("SELECT 'bar'")
             except mariadb.ProgrammingError:
                 pass
         try:
-            cursor= con.cursor()
+            cursor = con.cursor()
         except mariadb.ProgrammingError:
             pass
 
@@ -191,24 +194,24 @@ class TestConnection(unittest.TestCase):
         self.assertEqual(c1.autocommit, True)
 
     def test_conpy155(self):
-        default_conf= conf()
+        default_conf = conf()
         c1 = mariadb.connect(**default_conf)
-        version= c1.get_server_version()
+        version = c1.get_server_version()
         self.assertEqual(c1.get_server_version(), version)
         self.assertEqual(c1.get_server_version(), version)
         self.assertEqual(c1.get_server_version(), version)
         self.assertEqual(c1.get_server_version(), version)
         c1.close()
         try:
-            version= c1.get_server_version()
+            version = c1.get_server_version()
         except mariadb.ProgrammingError:
             pass
 
     def test_conpy175(self):
-        default_conf= conf()
+        default_conf = conf()
         c1 = mariadb.connect(**default_conf)
-        str= '"' * 4194304
-        newstr= c1.escape_string(str);
+        str = '"' * 4194304
+        newstr = c1.escape_string(str);
         self.assertEqual(newstr, '\\"' * 4194304)
         c1.close()
 
