@@ -1213,21 +1213,6 @@ class TestCursor(unittest.TestCase):
 
         del cursor, conn
 
-    def test_conpy196(self):
-        if is_skysql() or is_maxscale() or is_xpand():
-            self.skipTest("skip test (possible timeout)")
-        last = 0
-        for i in range(1, 100000):
-            conn = create_connection()
-            cursor = conn.cursor()
-            cursor.close()
-            conn.close()
-            usage = resource.getrusage(resource.RUSAGE_SELF)
-            new = usage[2]
-            if (last > 0):
-                self.assertEqual(new, last)
-            last = new
-
     def test_conpy178(self):
         conn = create_connection()
         cursor = conn.cursor()
