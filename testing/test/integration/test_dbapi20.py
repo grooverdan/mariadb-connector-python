@@ -259,7 +259,9 @@ class DatabaseAPI20Test(unittest.TestCase):
             # the documented transaction isolation level
             cur1 = con.cursor()
             cur2 = con.cursor()
+            cur1.execute("START TRANSACTION")
             self.executeDDL1(cur1)
+            cur1.execute("START TRANSACTION")
             cur1.execute("insert into %sbooze values ('Victoria Bitter')" % (
                 self.table_prefix
             ))
@@ -275,6 +277,7 @@ class DatabaseAPI20Test(unittest.TestCase):
         con = self._connect()
         try:
             cur = con.cursor()
+            cur.execute("START TRANSACTION")
             self.executeDDL1(cur)
             self.assertEqual(cur.description, None,
                              'cursor.description should be none after executing a '
@@ -308,6 +311,7 @@ class DatabaseAPI20Test(unittest.TestCase):
         con = self._connect()
         try:
             cur = con.cursor(buffered=True)
+            cur.execute("START TRANSACTION")
             self.executeDDL1(cur)
             self.assertEqual(cur.rowcount, 0,
                              'cursor.rowcount should be 0 after executing no-result '
@@ -357,6 +361,7 @@ class DatabaseAPI20Test(unittest.TestCase):
 
     def _paraminsert(self, cur):
         self.executeDDL1(cur)
+        cur.execute("START TRANSACTION")
         cur.execute("insert into %sbooze values ('Victoria Bitter')" % (
             self.table_prefix
         ))
@@ -411,6 +416,7 @@ class DatabaseAPI20Test(unittest.TestCase):
         con = self._connect()
         try:
             cur = con.cursor()
+            cur.execute("START TRANSACTION")
             self.executeDDL1(cur)
             largs = [("Cooper's",), ("Boag's",)]
             margs = [{'beer': "Cooper's"}, {'beer': "Boag's"}]
@@ -464,7 +470,7 @@ class DatabaseAPI20Test(unittest.TestCase):
         con = self._connect()
         try:
             cur = con.cursor(buffered=True)
-
+            cur.execute("START TRANSACTION")
             # cursor.fetchone should raise an Error if called before
             # executing a select-type query
             self.assertRaises(self.driver.Error, cur.fetchone)
@@ -529,7 +535,7 @@ class DatabaseAPI20Test(unittest.TestCase):
         con = self._connect()
         try:
             cur = con.cursor()
-
+            cur.execute("START TRANSACTION")
             # cursor.fetchmany should raise an Error if called without
             # issuing a query
             self.assertRaises(self.driver.Error, cur.fetchmany, 4)
@@ -612,6 +618,7 @@ class DatabaseAPI20Test(unittest.TestCase):
         con = self._connect()
         try:
             cur = con.cursor()
+            cur.execute("START TRANSACTION")
             # cursor.fetchall should raise an Error if called
             # without executing a query that may return rows (such
             # as a select)
@@ -662,6 +669,7 @@ class DatabaseAPI20Test(unittest.TestCase):
         con = self._connect()
         try:
             cur = con.cursor()
+            cur.execute("START TRANSACTION")
             self.executeDDL1(cur)
             for sql in self._populate():
                 cur.execute(sql)
@@ -740,6 +748,7 @@ class DatabaseAPI20Test(unittest.TestCase):
         con = self._connect()
         try:
             cur = con.cursor()
+            cur.execute("START TRANSACTION")
             self.executeDDL1(cur)
             cur.execute('insert into %sbooze values (NULL)' % self.table_prefix)
             cur.execute('select name from %sbooze' % self.table_prefix)

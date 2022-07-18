@@ -1,13 +1,10 @@
 #!/usr/bin/env python -O
 # -*- coding: utf-8 -*-
 
-import collections
-import datetime
 import unittest
 
 import mariadb
 import platform
-import sys
 
 from test.base_test import create_connection, conf, is_skysql, is_maxscale
 

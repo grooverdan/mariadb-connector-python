@@ -1,13 +1,10 @@
 #!/usr/bin/env python -O
 # -*- coding: utf-8 -*-
 
-import collections
 import datetime
 import unittest
-import os
 import decimal
 import json
-import resource
 from decimal import Decimal
 
 import mariadb
@@ -42,6 +39,7 @@ class TestCursor(unittest.TestCase):
             self.skipTest("microsecond not supported")
 
         cursor = self.connection.cursor()
+        cursor.execute("START TRANSACTION")
         cursor.execute(
             "CREATE TEMPORARY TABLE test_date(c1 TIMESTAMP(6), c2 TIME(6), c3 DATETIME(6), c4 DATE)")
         t = datetime.datetime(2018, 6, 20, 12, 22, 31, 123456)
@@ -61,6 +59,7 @@ class TestCursor(unittest.TestCase):
 
     def test_numbers(self):
         cursor = self.connection.cursor()
+        cursor.execute("START TRANSACTION")
         cursor.execute(
             "CREATE TEMPORARY TABLE test_numbers (a tinyint unsigned, b smallint unsigned, c mediumint "
             "unsigned, d int unsigned, e bigint unsigned, f double)")
@@ -85,6 +84,7 @@ class TestCursor(unittest.TestCase):
 
     def test_string(self):
         cursor = self.connection.cursor()
+        cursor.execute("START TRANSACTION")
         cursor.execute(
             "CREATE TEMPORARY TABLE test_string (a char(5), b varchar(100), c tinytext, "
             "d mediumtext, e text, f longtext)");
@@ -110,13 +110,14 @@ class TestCursor(unittest.TestCase):
 
     def test_blob(self):
         cursor = self.connection.cursor()
+        cursor.execute("START TRANSACTION")
         cursor.execute("CREATE TEMPORARY TABLE test_blob (a tinyblob, b mediumblob, c blob, "
                        "d longblob)")
 
-        c1 = b'a' * 100;
-        c2 = b'b' * 1000;
-        c3 = b'c' * 10000;
-        c4 = b'd' * 100000;
+        c1 = b'a' * 100
+        c2 = b'b' * 1000
+        c3 = b'c' * 10000
+        c4 = b'd' * 100000
 
         a = (None, None, None, None)
         cursor.execute("INSERT INTO test_blob VALUES (?,?,?,?)", (c1, c2, c3, c4))
@@ -133,6 +134,7 @@ class TestCursor(unittest.TestCase):
         if is_maxscale():
             self.skipTest("MAXSCALE doesn't support BULK yet")
         cursor = self.connection.cursor()
+        cursor.execute("START TRANSACTION")
         cursor.execute("CREATE TEMPORARY TABLE test_inserttuple (id int, name varchar(64), "
                        "city varchar(64))");
         params = ((1, u"Jack", u"Boston"),
@@ -151,6 +153,7 @@ class TestCursor(unittest.TestCase):
         if is_maxscale():
             self.skipTest("MAXSCALE doesn't support BULK yet")
         cursor = self.connection.cursor()
+        cursor.execute("START TRANSACTION")
         cursor.execute("CREATE TEMPORARY TABLE test_fetchmany (id int, name varchar(64), "
                        "city varchar(64))");
         params = [(1, u"Jack", u"Boston"),
@@ -229,6 +232,7 @@ class TestCursor(unittest.TestCase):
     def test_xfield_types(self):
         cursor = self.connection.cursor()
         fieldinfo = mariadb.fieldinfo()
+        cursor.execute("START TRANSACTION")
         cursor.execute(
             "CREATE TEMPORARY TABLE test_xfield_types (a tinyint not null auto_increment primary "
             "key, b smallint, c int, d bigint, e float, f decimal, g double, h char(10), i varchar(255), j blob, k json, index(b))");
@@ -260,6 +264,7 @@ class TestCursor(unittest.TestCase):
         if is_maxscale():
             self.skipTest("MAXSCALE doesn't support BULK yet")
         cursor = self.connection.cursor()
+        cursor.execute("START TRANSACTION")
         cursor.execute(
             "CREATE TEMPORARY TABLE bulk_delete (id int, name varchar(64), city varchar(64))");
         params = [(1, u"Jack", u"Boston"),
@@ -279,6 +284,7 @@ class TestCursor(unittest.TestCase):
             self.skipTest("MAXSCALE doesn't support BULK yet")
 
         cursor = self.connection.cursor()
+        cursor.execute("START TRANSACTION")
         cursor.execute(
             "CREATE TEMPORARY TABLE pyformat (id int, name varchar(64), city varchar(64))");
         params = [{"id": 1, "name": u"Jack", "city": u"Boston"},
@@ -298,6 +304,7 @@ class TestCursor(unittest.TestCase):
             self.skipTest("MAXSCALE doesn't support BULK yet")
 
         cursor = self.connection.cursor()
+        cursor.execute("START TRANSACTION")
         cursor.execute(
             "CREATE TEMPORARY TABLE pyformat (id int, name varchar(64), city varchar(64))");
         params = [(1, u"Jack", u"Boston"),
@@ -317,6 +324,7 @@ class TestCursor(unittest.TestCase):
             self.skipTest("MAXSCALE doesn't support BULK yet")
 
         cursor = self.connection.cursor(named_tuple=1)
+        cursor.execute("START TRANSACTION")
         cursor.execute(
             "CREATE TEMPORARY TABLE test_named_tuple (id int, name varchar(64), city varchar(64))");
         params = [(1, u"Jack", u"Boston"),
@@ -339,6 +347,7 @@ class TestCursor(unittest.TestCase):
             self.skipTest("MAXSCALE doesn't support BULK yet")
 
         cursor = self.connection.cursor(named_tuple=1)
+        cursor.execute("START TRANSACTION")
         cursor.execute("CREATE TEMPORARY TABLE test_laststatement (id int, name varchar(64), "
                        "city varchar(64))");
         self.assertEqual(cursor.statement,
@@ -358,7 +367,7 @@ class TestCursor(unittest.TestCase):
         cursor = self.connection.cursor()
         cursor1 = self.connection.cursor(cursor_type=CURSOR.READ_ONLY)
         cursor2 = self.connection.cursor(cursor_type=CURSOR.READ_ONLY)
-
+        cursor.execute("START TRANSACTION")
         cursor.execute("CREATE TEMPORARY TABLE test_multi_cursor (a int)")
         cursor.execute("INSERT INTO test_multi_cursor VALUES (1),(2),(3),(4),(5),(6),(7),(8)")
         del cursor
@@ -383,6 +392,7 @@ class TestCursor(unittest.TestCase):
 
     def test_dbapi_type(self):
         cursor = self.connection.cursor()
+        cursor.execute("START TRANSACTION")
         cursor.execute(
             "CREATE TEMPORARY TABLE test_dbapi_type (a int, b varchar(20), c blob, d datetime, e decimal)")
         cursor.execute("INSERT INTO test_dbapi_type VALUES (1, 'foo', 'blabla', now(), 10.2)");
@@ -401,6 +411,7 @@ class TestCursor(unittest.TestCase):
 
     def test_tuple(self):
         cursor = self.connection.cursor()
+        cursor.execute("START TRANSACTION")
         cursor.execute("CREATE TEMPORARY TABLE dyncol1 (a blob)")
         tpl = (1, 2, 3)
         cursor.execute("INSERT INTO dyncol1 VALUES (?)", tpl)
@@ -413,6 +424,7 @@ class TestCursor(unittest.TestCase):
             self.skipTest("MAXSCALE doesn't support BULK yet")
 
         cursor = self.connection.cursor()
+        cursor.execute("START TRANSACTION")
         cursor.execute("CREATE TEMPORARY TABLE ind1 (a int, b int default 2,c int)")
         vals = [(1, 4, 3), (INDICATOR.NULL, INDICATOR.DEFAULT, 3)]
         cursor.executemany("INSERT INTO ind1 VALUES (?,?,?)", vals)
@@ -434,6 +446,7 @@ class TestCursor(unittest.TestCase):
 
     def test_fake_pickle(self):
         cursor = self.connection.cursor()
+        cursor.execute("START TRANSACTION")
         cursor.execute("CREATE TEMPORARY TABLE test_fake_pickle (a blob)")
         k = bytes([0x80, 0x03, 0x00, 0x2E])
         cursor.execute("insert into test_fake_pickle values (?)", (k,))
@@ -453,6 +466,7 @@ class TestCursor(unittest.TestCase):
 
     def test_collate(self):
         cursor = self.connection.cursor()
+        cursor.execute("START TRANSACTION")
         cursor.execute(
             "CREATE TEMPORARY TABLE `test_collate` (`test` varchar(500) COLLATE "
             "utf8mb4_unicode_ci NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci")
@@ -483,6 +497,7 @@ class TestCursor(unittest.TestCase):
 
     def test_conpy34(self):
         cursor = self.connection.cursor()
+        cursor.execute("START TRANSACTION")
         cursor.execute("CREATE TEMPORARY TABLE t1 (a varchar(20), b varchar(20))")
         try:
             cursor.execute("INSERT INTO test.t1(fname, sname) VALUES (?, ?)",
@@ -531,6 +546,7 @@ class TestCursor(unittest.TestCase):
 
     def test_conpy_9(self):
         cursor = self.connection.cursor()
+        cursor.execute("START TRANSACTION")
         cursor.execute(
             "CREATE TEMPORARY TABLE test_compy_9 (a varchar(20), b double(5,2), c double)");
         cursor.execute("INSERT INTO test_compy_9 VALUES ('€uro', -123.34, 12345.678)")
@@ -548,6 +564,7 @@ class TestCursor(unittest.TestCase):
         if is_maxscale():
             self.skipTest("MAXSCALE doesn't support BULK yet")
         cursor = self.connection.cursor()
+        cursor.execute("START TRANSACTION")
         cursor.execute(
             "CREATE TEMPORARY TABLE test_conpy_15 (a int not null auto_increment primary key, b varchar(20))");
         self.assertEqual(cursor.lastrowid, None)
@@ -575,6 +592,7 @@ class TestCursor(unittest.TestCase):
             self.skipTest("MAXSCALE doesn't support BULK yet")
         cursor = self.connection.cursor()
         self.assertEqual(cursor.rowcount, -1)
+        cursor.execute("START TRANSACTION")
         cursor.execute(
             "CREATE TEMPORARY TABLE test_conpy_14 (a int not null auto_increment primary key, b varchar(20))");
         self.assertEqual(cursor.rowcount, 0)
@@ -616,6 +634,7 @@ class TestCursor(unittest.TestCase):
             self.skipTest("MAXSCALE doesn't support BULK yet")
 
         cursor = self.connection.cursor()
+        cursor.execute("START TRANSACTION")
         cursor.execute("CREATE TEMPORARY TABLE test_update_bulk (a int primary key, b int)")
         vals = [(i,) for i in range(1000)]
         cursor.executemany("INSERT INTO test_update_bulk VALUES (?, NULL)", vals);
@@ -629,6 +648,7 @@ class TestCursor(unittest.TestCase):
 
     def test_multi_execute(self):
         cursor = self.connection.cursor()
+        cursor.execute("START TRANSACTION")
         cursor.execute(
             "CREATE TEMPORARY TABLE test_multi_execute (a int auto_increment primary key, b int)")
         self.connection.autocommit = False
@@ -652,6 +672,7 @@ class TestCursor(unittest.TestCase):
         # F0 9F A5 82 🥂 unicode 9 champagne glass
         con = create_connection()
         cursor = con.cursor()
+        cursor.execute("START TRANSACTION")
         cursor.execute(
             "CREATE TEMPORARY TABLE `test_utf8` (`test` blob)")
         cursor.execute("INSERT INTO test_utf8 VALUES (?)", ("😎🌶🎤🥂",))
@@ -676,6 +697,7 @@ class TestCursor(unittest.TestCase):
     def test_multiple_cursor(self):
         cursor = self.connection.cursor()
         cursor2 = self.connection.cursor()
+        cursor.execute("START TRANSACTION")
         cursor.execute("CREATE TEMPORARY TABLE test_multiple_cursor(col1 int, col2 varchar(100))")
         cursor.execute("INSERT INTO test_multiple_cursor VALUES (1, 'val1'), (2, 'val2')")
         cursor.execute("SELECT * FROM test_multiple_cursor LIMIT 1")
@@ -774,6 +796,7 @@ class TestCursor(unittest.TestCase):
             self.skipTest("Skip (MySQL)")
         con = create_connection()
         cursor = con.cursor()
+        cursor.execute("START TRANSACTION")
         cursor.execute("CREATE TEMPORARY TABLE conpy42(a GEOMETRY)")
         cursor.execute("INSERT INTO conpy42 VALUES (PointFromText('point(1 1)'))")
         cursor.execute("SELECT a FROM conpy42")
@@ -785,6 +808,7 @@ class TestCursor(unittest.TestCase):
     def test_conpy35(self):
         con = create_connection()
         cursor = con.cursor()
+        cursor.execute("START TRANSACTION")
         cursor.execute("CREATE TEMPORARY table sample (id BIGINT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(64))");
 
         for name in ('foo', 'bar', 'baz'):
@@ -802,6 +826,7 @@ class TestCursor(unittest.TestCase):
     def test_conpy45(self):
         con = create_connection()
         cursor = con.cursor()
+        cursor.execute("START TRANSACTION")
         cursor.execute("CREATE TEMPORARY table t1 (a time(3), b datetime(2))")
         cursor.execute("INSERT INTO t1 VALUES ('13:12:24.05111', '2020-10-10 14:12:24.123456')")
         cursor.execute("SELECT a,b FROM t1");
@@ -840,6 +865,7 @@ class TestCursor(unittest.TestCase):
         cur.execute("select %s", [True])
         row = cur.fetchone()
         self.assertEqual(row[0], 1)
+        cur.execute("START TRANSACTION")
         cur.execute("create temporary table t1 (a int)")
         cur.executemany("insert into t1 values (%s)", [[1], (2,)])
         cur.execute("select a from t1")
@@ -852,6 +878,7 @@ class TestCursor(unittest.TestCase):
     def test_conpy51(self):
         con = create_connection()
         cur = con.cursor(buffered=True)
+        cur.execute("START TRANSACTION")
         cur.execute('create temporary table temp (a int unsigned)')
         cur.execute('insert into temp values (1), (2), (3)')
         cur.execute('select a from temp order by a')
@@ -865,6 +892,7 @@ class TestCursor(unittest.TestCase):
     def test_conpy52(self):
         con = create_connection()
         cur = con.cursor(buffered=True)
+        cur.execute("START TRANSACTION")
         cur.execute('create temporary table temp (a int unsigned)')
         cur.execute('insert into temp values (1), (2), (3)')
         cur.execute('select a from temp order by a')
@@ -886,6 +914,7 @@ class TestCursor(unittest.TestCase):
         con = create_connection()
         cur = con.cursor()
         cur.execute("create temporary table t1 (a decimal(10,2))")
+        cur.execute("START TRANSACTION")
         cur.execute("insert into t1 values (?)", (Decimal('10.2'),))
         cur.execute("select a from t1")
         row = cur.fetchone()
@@ -919,6 +948,7 @@ class TestCursor(unittest.TestCase):
         row = cursor.fetchone()
         self.assertEqual(row[0], 3)
         cursor.execute("CREATE TEMPORARY TABLE t1 (a int)")
+        cursor.execute("START TRANSACTION")
         cursor.executemany("INSERT INTO t1 VALUES (%(val)s)", [{"val": 1}, {"val": 2}])
         cursor.execute("SELECT a FROM t1 ORDER by a")
         row = cursor.fetchall()
@@ -930,6 +960,7 @@ class TestCursor(unittest.TestCase):
         con = create_connection()
         cursor = con.cursor()
         cursor.execute("CREATE TEMPORARY TABLE t1 (a date)")
+        cursor.execute("START TRANSACTION")
         cursor.execute("INSERT INTO t1 VALUES('0000-01-01')")
         cursor.execute("SELECT a FROM t1")
         row = cursor.fetchone()
@@ -945,6 +976,7 @@ class TestCursor(unittest.TestCase):
         cursor = con.cursor()
         cursor.execute("CREATE TEMPORARY TABLE ind1 (a int, b int default 2,c int)")
         vals = [(1, 4, 3), (None, 2, 3)]
+        cursor.execute("START TRANSACTION")
         cursor.executemany("INSERT INTO ind1 VALUES (?,?,?)", vals)
         cursor.execute("SELECT a, b, c FROM ind1")
         row = cursor.fetchone()
@@ -981,6 +1013,7 @@ class TestCursor(unittest.TestCase):
         cur.close()
 
         cur = con.cursor()
+        cur.execute("START TRANSACTION")
         cur.execute("CREATE TEMPORARY TABLE test_conpy67 (a int)")
         cur.execute("SELECT * from test_conpy67")
         self.assertEqual(cur.rowcount, 0)
@@ -992,6 +1025,7 @@ class TestCursor(unittest.TestCase):
         cur = con.cursor()
         cur.execute("drop table if exists t1")
         cur.execute("create table t1(a tinyint, b int, c bigint)")
+        cur.execute("START TRANSACTION")
         cur.execute("insert into t1 values (?,?,?)", (-1, -300, -2147483649))
         cur.execute("select a, b, c FROM t1")
         row = cur.fetchone()
@@ -1004,6 +1038,7 @@ class TestCursor(unittest.TestCase):
     def test_none_val(self):
         con = create_connection()
         cur = con.cursor()
+        cur.execute("START TRANSACTION")
         cur.execute("CREATE TEMPORARY TABLE t1 (a int)")
         vals = [(1,), (2,), (4,), (None,), (3,)]
         cur.executemany("INSERT INTO t1 VALUES (?)", vals)
@@ -1015,6 +1050,7 @@ class TestCursor(unittest.TestCase):
     def test_conpy81(self):
         con = create_connection()
         cur = con.cursor()
+        cur.execute("START TRANSACTION")
         cur.execute("CREATE TEMPORARY TABLE t1 (a int)")
         cur.execute("INSERT INTO t1 VALUES(1)")
         cur.execute("SELECT a FROM t1")
@@ -1150,6 +1186,7 @@ class TestCursor(unittest.TestCase):
             self.skipTest("Skip (MySQL)")
         connection = create_connection()
         cursor = connection.cursor()
+        cursor.execute("START TRANSACTION")
         cursor.execute(
             "create temporary table t1 (id int, a datetime not null default '0000-00-00 00:00:00', b date not null default '0000-00-00')")
         cursor.execute("insert into t1 (id) values (1)");

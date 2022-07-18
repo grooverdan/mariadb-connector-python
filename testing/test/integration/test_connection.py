@@ -9,7 +9,6 @@ import mariadb
 from test.base_test import create_connection, is_skysql, is_maxscale
 from test.conf_test import conf
 import platform
-import logging
 
 class TestConnection(unittest.TestCase):
 
@@ -43,7 +42,7 @@ class TestConnection(unittest.TestCase):
         f.write("database=%s\n" % default_conf["database"])
         f.close()
 
-        new_conn = mariadb.connect(user=default_conf["user"], ssl=True, default_file="./client.cnf")
+        new_conn = create_connection({"user":default_conf["user"], "ssl":True, "default_file":"./client.cnf"})
         self.assertEqual(new_conn.database, default_conf["database"])
         del new_conn
         os.remove("client.cnf")
@@ -57,8 +56,7 @@ class TestConnection(unittest.TestCase):
         self.assertEqual(conn.autocommit, True)
 
     def test_local_infile(self):
-        default_conf = conf()
-        new_conn = mariadb.connect(**default_conf, local_infile=False)
+        new_conn = create_connection({ "local_infile": False })
         cursor = new_conn.cursor()
         cursor.execute("CREATE TEMPORARY TABLE t1 (a int)")
         try:
@@ -69,8 +67,7 @@ class TestConnection(unittest.TestCase):
         del new_conn
 
     def test_init_command(self):
-        default_conf = conf()
-        new_conn = mariadb.connect(**default_conf, init_command="SET @a:=1")
+        new_conn = create_connection({"init_command":"SET @a:=1"})
         # , port=default_conf["port"], host=default_conf["host"], password=default_conf["password"])
         cursor = new_conn.cursor()
         cursor.execute("SELECT @a")
@@ -81,9 +78,8 @@ class TestConnection(unittest.TestCase):
 
     def test_compress(self):
         print('compress Diego 1')
-        default_conf = conf()
         print('compress Diego 2')
-        new_conn = mariadb.connect(**default_conf, compress=True)
+        new_conn = create_connection({"compress": True})
         print('compress Diego 3')
         cursor = new_conn.cursor()
         print('compress Diego 4')
@@ -172,7 +168,7 @@ class TestConnection(unittest.TestCase):
         try:
             create_connection({"user": "eduser", "password": "MySup8%rPassw@ord", "plugin_dir": "wrong_plugin_dir"})
             self.fail("wrong plugin directory, must not have found authentication plugin")
-        except (mariadb.OperationalError):
+        except mariadb.OperationalError:
             pass
         cursor.execute("DROP USER IF EXISTS eduser")
         del cursor, conn2
@@ -193,15 +189,13 @@ class TestConnection(unittest.TestCase):
             pass
 
     def test_conpy101(self):
-        default_conf = conf()
-        c1 = mariadb.connect(**default_conf)
+        c1 = create_connection()
         self.assertEqual(c1.autocommit, False)
-        c1 = mariadb.connect(**default_conf, autocommit=True)
+        c1 = create_connection({"autocommit":True})
         self.assertEqual(c1.autocommit, True)
 
     def test_conpy155(self):
-        default_conf = conf()
-        c1 = mariadb.connect(**default_conf)
+        c1 = create_connection()
         version = c1.get_server_version()
         self.assertEqual(c1.get_server_version(), version)
         self.assertEqual(c1.get_server_version(), version)
@@ -214,10 +208,9 @@ class TestConnection(unittest.TestCase):
             pass
 
     def test_conpy175(self):
-        default_conf = conf()
-        c1 = mariadb.connect(**default_conf)
+        c1 = create_connection()
         str = '"' * 4194304
-        newstr = c1.escape_string(str);
+        newstr = c1.escape_string(str)
         self.assertEqual(newstr, '\\"' * 4194304)
         c1.close()
 
