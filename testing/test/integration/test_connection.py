@@ -9,7 +9,7 @@ import mariadb
 from test.base_test import create_connection, is_skysql, is_maxscale
 from test.conf_test import conf
 import platform
-
+import logging
 
 class TestConnection(unittest.TestCase):
 
