@@ -80,11 +80,17 @@ class TestConnection(unittest.TestCase):
         del new_conn
 
     def test_compress(self):
+        print('compress Diego 1')
         default_conf = conf()
+        print('compress Diego 2')
         new_conn = mariadb.connect(**default_conf, compress=True)
+        print('compress Diego 3')
         cursor = new_conn.cursor()
+        print('compress Diego 4')
         cursor.execute("SHOW SESSION STATUS LIKE 'compression'")
+        print('compress Diego 5')
         row = cursor.fetchone()
+        print('compress Diego 6')
         print(row[1])
         if is_maxscale():
             self.assertEqual(row[1], "OFF")

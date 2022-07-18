@@ -27,7 +27,7 @@ class CursorTest(unittest.TestCase):
         self.connection.kill(id)
         try:
             new_conn.ping()
-        except mariadb.InterfaceError:
+        except (mariadb.InterfaceError, mariadb.OperationalError) :
             pass
         del new_conn
         new_conn = create_connection()
